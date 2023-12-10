@@ -1,5 +1,4 @@
-import string
-from bs4 import BeautifulSoup, Tag
+from bs4 import BeautifulSoup
 import requests
 from ebooklib import epub
 
@@ -17,10 +16,12 @@ from ebooklib import epub
 # print(txt)
 
 chps = []
+chps.append("nav")
 book = epub.EpubBook()
 book.set_title('Abe_wiz')
 description = epub.EpubHtml(title='Introduction',file_name='intro.xhtml',lang='en',content=u'<html><head></head><body><h1>Introduct</h1><p>Hola!!!</p></body></html>')
 book.add_item(description)
+chps.append(description)
 
 def boxnovel_scrap(chp_link,i): 
     r = requests.get(f'{chp_link}')
