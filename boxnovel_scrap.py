@@ -16,37 +16,42 @@ from ebooklib import epub
 # txt = [chp_content.text]
 # print(txt)
 
-txt = []
-title = []
-chp = []
+chps = []
 book = epub.EpubBook()
 book.set_title('Abe_wiz')
+description = epub.EpubHtml(title='Introduction',file_name='intro.xhtml',lang='en',content=u'<html><head></head><body><h1>Introduct</h1><p>Hola!!!</p></body></html>')
+book.add_item(description)
 
-def boxnovel_scrap(chp_link): 
+def boxnovel_scrap(chp_link,i): 
     r = requests.get(f'{chp_link}')
-    # print(r)
     soup = BeautifulSoup(markup=r.content,features="lxml")
     chp_content = soup.find("div",{"text-left"})
     # unwanted_div = chp_content.find("div").extract() # this line extracts the unwanted div tag from the middle of the o/p and stores it in this var, so o/p doesnt displays it.
-    # print(chp_content)
-    chp_title = chp_content.find('h3').text
-    title.append(chp_title)
-    # print(chp_title)
-    txt.append(chp_content)
-
+    chp_title = chp_content.find('h3').text.strip()
+    paragraph = f"<p>{chp_title}</p>"
+    content = chp_content.find_all("p")
+    for j in content:
+        con = j.text.strip()
+        paragraph = paragraph + f"<p>{con}</p>"
+    chapter = epub.EpubHtml(title=chp_title,file_name=f"chapter_{i+1}.xhtml",lang='en',content=paragraph)
+    book.add_item(chapter)
+    chps.append(chapter)
 
 i = 0
-while i < 1:
+while i < 2:
     ch = f"https://boxnovel.com/novel/abe-the-wizard-boxnovel/chapter-{i+1}/"
-    # print(ch)
-    boxnovel_scrap(ch)
+    boxnovel_scrap(ch,i)
     # f = open(f"D:\\PROJECTS\\Git_Projects\\Scrapers\\NewFolder\\chapter_{i+1}","x")
     # f.write(txt[i])
-    chapter = epub.EpubHtml(title=title[i],file_name=f"chapter_{i+1}.xhtml",lang='en',content=txt[i])
-    book.add_item(chapter)
-    chp.append(chapter)
     i += 1
 
+# Defining index of book 
+book.toc = ( epub.Link(href='intro.xhtml',title='Introduction',uid='intro'), (epub.Section('Chapters'),(chps)) )
+ 
+# Adding navigation files 
+book.add_item(epub.EpubNcx()) 
+book.add_item(epub.EpubNav()) 
+
+book.spine = chps
 epub.write_epub(f"D:\\PROJECTS\\Git_Projects\\Scrapers\\NewFolder\\test1.epub",book,{})
-print("complete")
-# print(txt)
+print(" xxxx -- complete -- xxxx ")
